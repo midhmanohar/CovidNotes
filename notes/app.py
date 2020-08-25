@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify,request
 from flask_restful import Api, Resource
 
 app = Flask(__name__)
@@ -39,17 +39,19 @@ NOTES = [
 
 class Note(Resource):
     def get(self, note_id):
-        return jsonify(NOTES[note_id])
+        for note in NOTES:
+            if(note['id']==note_id): 
+                return jsonify(note)
 
     def delete(self, note_id):
         del NOTES[note_id]
         return '', 204
 
     def put(self,note_id):
-        new_id = note_id
-        new_title = request.form['title']
-        new_body = request.form['body']
-        new_author = request.form['author']
+    
+        new_title = request.args['title']
+        new_body = request.args['body']
+        new_author = request.args['author']
 
         new_obj = {
           "id":new_id,
@@ -69,10 +71,10 @@ class NoteList(Resource):
         return jsonify(NOTES)
 
     def post(self):
-        new_id = request.form['id']
-        new_title = request.form['title']
-        new_body = request.form['body']
-        new_author = request.form['author']
+        new_id = request.args['id']
+        new_title = request.args['title']
+        new_body = request.args['body']
+        new_author = request.args['author']
 
         new_obj = {
           "id":new_id,
@@ -83,7 +85,7 @@ class NoteList(Resource):
 
         NOTES.append(new_obj)
 
-        return jsonify(NOTES),201
+        return jsonify(NOTES)
 
 
 
