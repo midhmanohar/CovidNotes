@@ -1,4 +1,4 @@
-from flask import Flask, jsonify,request
+from flask import Flask, jsonify, request
 from flask_restful import Api, Resource
 
 app = Flask(__name__)
@@ -9,89 +9,94 @@ api = Api(app)
 
 
 # sample data
-NOTES = [
-    {
-        "id":1,
+NOTES = {
+    1: {
         "title": "Sample title",
         "body": "Sample body",
         "author": "John",
     },
-    {
-        "id":2,
+    2: {
         "title": "Sample title",
         "body": "Sample body",
         "author": "John",
     },
-    {
-        "id":3,
+    3: {
         "title": "Sample title",
         "body": "Sample body",
         "author": "John",
     },
-    {
-        "id":4,
+    4: {
         "title": "Sample title",
         "body": "Sample body",
         "author": "John",
     }
-]
+}
 
 
 class Note(Resource):
+    # Get a note by id
     def get(self, note_id):
-        for note in NOTES:
-            if(note['id']==note_id): 
-                return jsonify(note)
+        note = NOTES[note_id]
+        # If note doesn't exists
+        if not note:
+            return {"message": "Note with the given id doesn't exist"}
+        return jsonify(note)
 
+    # Delete a note by id
     def delete(self, note_id):
+        if not NOTES[note_id]:
+            return {"message": "Note with the given id doesn't exist"}
         del NOTES[note_id]
-        return '', 204
+        return {"message": "The note deleted successfully"}, 204
 
-    def put(self,note_id):
-    
-        new_title = request.args['title']
-        new_body = request.args['body']
-        new_author = request.args['author']
+    # Update a note by id
+    def put(self, note_id):
+        note = NOTES[note_id]
+        # If note doesn't exists
+        if not note:
+            return {"message": "Note with the given id doesn't exist"}
 
-        new_obj = {
-          "id":new_id,
-          "title":new_title,
-          "body":new_body,
-          "author":new_author
+        # get data through json
+        data = request.get_json()
+        new_title = data['title']
+        new_body = data['body']
+        new_author = data['author']
+
+        NOTES[note_id] = {
+            "title": new_title,
+            "body": new_body,
+            "author": new_author
         }
 
-        NOTES.append(new_obj)
-
         return jsonify(NOTES)
-
 
 
 class NoteList(Resource):
+    # Get all notes
     def get(self):
         return jsonify(NOTES)
 
+    # To create a new note
     def post(self):
-        new_id = request.args['id']
-        new_title = request.args['title']
-        new_body = request.args['body']
-        new_author = request.args['author']
-
+        # get data through json
+        data = request.get_json()
+        new_title = data['title']
+        new_body = data['body']
+        new_author = data['author']
+        new_id = len(NOTES) + 1
         new_obj = {
-          "id":new_id,
-          "title":new_title,
-          "body":new_body,
-          "author":new_author
+            "title": new_title,
+            "body": new_body,
+            "author": new_author
         }
 
-        NOTES.append(new_obj)
+        NOTES[new_id] = new_obj
 
         return jsonify(NOTES)
-
 
 
 api.add_resource(Note, '/notes/<int:note_id>')
 api.add_resource(NoteList, '/notes')
-
 
 if __name__ == "__main__":
     app.run(debug=True)
